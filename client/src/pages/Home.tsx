@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { 
   Shield, Terminal, Search, Filter, ExternalLink, Flame, CheckCircle, 
   HelpCircle, ChevronRight, Award, Trophy, Compass, Sparkles, BookOpen, 
-  Layers, Zap, AlertCircle, RefreshCw, Radio
+  Layers, Zap, AlertCircle, RefreshCw, Radio, Activity, BarChart3, Clock3,
+  Database, Server, Gauge, Users, LayoutDashboard
 } from "lucide-react";
 import labsData from "../data/vulnhub_labs.json";
 import blueprintData from "../data/practice_blueprints.json";
@@ -84,6 +85,34 @@ export default function Home() {
   const [solvedFlags, setSolvedFlags] = useState<{ [machineId: string]: { user: boolean; root: boolean } }>({});
   const [userScore, setUserScore] = useState<number>(0);
   const [activeHintIndex, setActiveHintIndex] = useState<{ [machineId: string]: number }>({});
+  const [performanceStats, setPerformanceStats] = useState({
+    lcp: null as number | null,
+    ttfb: null as number | null,
+    domNodes: 0,
+    resources: 0,
+    transferKb: 0,
+  });
+
+  useEffect(() => {
+    const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+    setPerformanceStats({
+      lcp: null,
+      ttfb: navigation ? Math.round(navigation.responseStart - navigation.requestStart) : null,
+      domNodes: document.getElementsByTagName("*").length,
+      resources: resources.length,
+      transferKb: Math.round(resources.reduce((total, resource) => total + (resource.transferSize || 0), 0) / 1024),
+    });
+    if ("PerformanceObserver" in window) {
+      const observer = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const latest = entries[entries.length - 1];
+        if (latest) setPerformanceStats(previous => ({ ...previous, lcp: Math.round(latest.startTime) }));
+      });
+      observer.observe({ type: "largest-contentful-paint", buffered: true });
+      return () => observer.disconnect();
+    }
+  }, []);
 
   const activeMachine = useMemo(() => {
     return allMachines.find((m) => m.id === selectedMachineId) || allMachines[0];
@@ -139,12 +168,20 @@ export default function Home() {
 
   const isUserSolved = solvedFlags[activeMachine.id]?.user || false;
   const isRootSolved = solvedFlags[activeMachine.id]?.root || false;
+  const platformStats = useMemo(() => {
+    const stats = new Map<string, number>();
+    blueprintMachines.forEach(machine => stats.set(machine.series, (stats.get(machine.series) || 0) + 1));
+    return Array.from(stats.entries());
+  }, [blueprintMachines]);
+  const completedLabs = Object.values(solvedFlags).filter(status => status.user && status.root).length;
+  const capturedFlags = Object.values(solvedFlags).reduce((total, status) => total + Number(status.user) + Number(status.root), 0);
+  const completionRate = allMachines.length ? Math.round((completedLabs / allMachines.length) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
-      {/* Barra de Navegación Superior */}
-      <header className="sticky top-0 z-50 bg-slate-950/90 border-b border-slate-800 backdrop-blur-md px-4 lg:px-8 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      {/* Navegación institucional */}
+      <header className="sticky top-0 z-50 bg-slate-950/95 border-b border-slate-800 backdrop-blur-md px-4 lg:px-8 py-3">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Logo3DAnimation size="sm" />
             <div>
@@ -152,21 +189,25 @@ export default function Home() {
                 <span className="font-extrabold tracking-tight text-lg text-slate-100">
                   Vuln<span className="text-emerald-400">Lab</span>
                 </span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  PRACTICE ENVIRONMENT
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
+                  Centro de control
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-mono hidden sm:block">
-                Basado en VulnHub Timeline • Scrapling • Web-Perf • Reviewer
+                Operaciones de aprendizaje · seguridad ofensiva y defensiva
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Marcador de Puntuación */}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono">
+              <Activity className="w-4 h-4 text-emerald-400" />
+              <span className="text-slate-400">Sesión activa</span>
+              <span className="font-bold text-emerald-400">ONLINE</span>
+            </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono">
               <Trophy className="w-4 h-4 text-amber-400" />
-              <span className="text-slate-400">Puntos:</span>
+              <span className="text-slate-400">Puntuación</span>
               <span className="font-bold text-emerald-400 text-sm">{userScore} XP</span>
             </div>
 
@@ -178,71 +219,58 @@ export default function Home() {
               className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-emerald-400 border border-slate-800 transition-colors text-xs font-mono flex items-center gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">VulnHub Timeline</span>
+              <span className="hidden md:inline">Fuentes</span>
             </a>
           </div>
         </div>
       </header>
 
-      {/* Hero Section con Logo 3D Animado y Visión General */}
-      <section className="relative overflow-hidden border-b border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900/60 to-slate-950 py-10 lg:py-14 px-4 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-7 space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
-              <Flame className="w-3.5 h-3.5 animate-pulse text-emerald-400" />
-              <span>{allMachines.length} Entornos de Práctica Disponibles</span>
+      {/* Resumen ejecutivo del centro de control */}
+      <section className="border-b border-slate-800 bg-slate-900/35 px-4 lg:px-8 py-8">
+        <div className="max-w-[1440px] mx-auto space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-emerald-400 mb-2">Resumen ejecutivo · 14 septiembre 2026</p>
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-100">Estado operativo del entorno</h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-400 leading-relaxed">Supervisa cobertura de laboratorios, avance de la sesión y salud técnica de la plataforma desde un único punto de control.</p>
             </div>
-
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-100 leading-tight">
-              Entorno de Práctica de <br />
-              <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                Ciberseguridad y Explotación
-              </span>
-            </h1>
-
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
-              Plataforma interactiva para practicar pentesting, auditoría de vulnerabilidades y CTFs. 
-              Extrae la cronología oficial de VulnHub con <strong>Scrapling</strong>, ofrece consola de comandos 
-              aislada con captura de banderas, auditoría de métricas <strong>Web-Perf</strong> y validación visual 
-              continua con <strong>Web-Design-Reviewer</strong>.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-400">
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-900/80 border border-slate-800">
-                <Radio className="w-3 h-3 text-cyan-400" />
-                Sync automático: {syncStatus?.schedule?.configured ? "ACTIVO" : "PENDIENTE DE DEPLOY"}
-              </span>
-              {syncStatus?.latest?.completedAt && (
-                <span>Última ejecución: {new Date(syncStatus.latest.completedAt).toLocaleString("es-MX")}</span>
-              )}
-            </div>
-
-            {/* Métricas destacadas */}
-            <div className="grid grid-cols-3 gap-3 pt-2 max-w-lg">
-              <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-                <div className="text-xl font-bold font-mono text-emerald-400">{allMachines.length}</div>
-                <div className="text-[11px] text-slate-400 font-mono mt-0.5">Entornos catalogados</div>
-              </div>
-              <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-                <div className="text-xl font-bold font-mono text-cyan-400">100%</div>
-                <div className="text-[11px] text-slate-400 font-mono mt-0.5">Runtime aislado</div>
-              </div>
-              <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-                <div className="text-xl font-bold font-mono text-amber-400">&lt; 350ms</div>
-                <div className="text-[11px] text-slate-400 font-mono mt-0.5">LCP Auditado (Vitals)</div>
-              </div>
+            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+              <span className="inline-flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-emerald-300"><span className="h-2 w-2 rounded-full bg-emerald-400" />Operativo</span>
+              <span className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2">Última actualización: ahora</span>
             </div>
           </div>
 
-          {/* Animación 3D del Logo / Escudo Táctico */}
-          <div className="lg:col-span-5 flex justify-center py-4">
-            <Logo3DAnimation size="hero" />
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            {[
+              { label: "Entornos disponibles", value: allMachines.length, detail: `${filteredMachines.length} visibles`, icon: Database, tone: "text-emerald-400" },
+              { label: "Laboratorios completados", value: completedLabs, detail: `${completionRate}% del catálogo`, icon: CheckCircle, tone: "text-cyan-400" },
+              { label: "Banderas capturadas", value: capturedFlags, detail: `${userScore} XP acumulados`, icon: Award, tone: "text-amber-400" },
+              { label: "LCP observado", value: performanceStats.lcp ? `${performanceStats.lcp} ms` : "—", detail: "Primera pintura registrada", icon: Gauge, tone: "text-violet-400" },
+              { label: "TTFB observado", value: performanceStats.ttfb ? `${performanceStats.ttfb} ms` : "—", detail: `${performanceStats.resources} recursos cargados`, icon: Clock3, tone: "text-sky-400" },
+            ].map(({ label, value, detail, icon: Icon, tone }) => (
+              <div key={label} className="rounded-lg border border-slate-800 bg-slate-950/70 p-4 shadow-sm">
+                <div className="flex items-center justify-between"><span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{label}</span><Icon className={`h-4 w-4 ${tone}`} /></div>
+                <div className={`mt-3 text-2xl font-semibold font-mono ${tone}`}>{value}</div>
+                <div className="mt-1 text-[11px] text-slate-500">{detail}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <div className="lg:col-span-2 rounded-lg border border-slate-800 bg-slate-950/55 p-4">
+              <div className="flex items-center justify-between mb-4"><div><p className="text-xs font-semibold text-slate-200">Cobertura del catálogo</p><p className="text-[11px] text-slate-500 mt-1">Distribución de los blueprints reproducibles por plataforma</p></div><BarChart3 className="h-4 w-4 text-slate-500" /></div>
+              <div className="space-y-3">{platformStats.map(([platform, count]) => <div key={platform} className="flex items-center gap-3 text-xs"><span className="w-40 truncate text-slate-400">{platform}</span><div className="h-2 flex-1 rounded-full bg-slate-800"><div className="h-2 rounded-full bg-emerald-500" style={{ width: `${Math.max(12, (count / 3) * 100)}%` }} /></div><span className="w-8 text-right font-mono text-slate-300">{count}</span></div>)}</div>
+            </div>
+            <div className="rounded-lg border border-slate-800 bg-slate-950/55 p-4">
+              <div className="flex items-center gap-2 mb-4"><Server className="h-4 w-4 text-emerald-400" /><p className="text-xs font-semibold text-slate-200">Salud del servicio</p></div>
+              <div className="space-y-3 text-xs"><div className="flex justify-between"><span className="text-slate-500">Sincronización Scrapling</span><span className="text-emerald-400 font-mono">{syncStatus?.schedule?.configured ? "ACTIVA" : "PENDIENTE"}</span></div><div className="flex justify-between"><span className="text-slate-500">Workspace de práctica</span><span className="text-emerald-400 font-mono">AISLADO</span></div><div className="flex justify-between"><span className="text-slate-500">Transferencia inicial</span><span className="text-slate-300 font-mono">{performanceStats.transferKb ? `${performanceStats.transferKb} KB` : "—"}</span></div></div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Contenido Principal: Explorador de Máquinas + Entorno de Práctica */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 lg:px-8 py-8 space-y-8">
         
         {/* Barra de Filtros y Búsqueda */}
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between bg-slate-900/60 p-3 rounded-xl border border-slate-800 backdrop-blur-md">
@@ -554,16 +582,16 @@ export default function Home() {
 
       {/* Pie de página */}
       <footer className="mt-auto border-t border-slate-800 bg-slate-950 px-4 lg:px-8 py-6 text-xs text-slate-400 font-mono">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-emerald-400 font-bold">VulnLab Timeline Engine</span>
+            <span className="text-emerald-400 font-bold">VulnLab Control Center</span>
             <span>•</span>
-            <span>Extracción estructurada con Scrapling</span>
+            <span>Catálogo y práctica aislada</span>
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>/web-perf Core Vitals Audit</span>
-            <span>/web-design-reviewer QA</span>
-            <span>/muapi-3d-logo-animation Emblem</span>
+            <span>Web-Perf</span>
+            <span>Design QA</span>
+            <span>Scrapling Sync</span>
           </div>
         </div>
       </footer>
