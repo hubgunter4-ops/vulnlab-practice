@@ -203,7 +203,7 @@ export default function Home() {
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
               Plataforma interactiva para practicar pentesting, auditoría de vulnerabilidades y CTFs. 
               Extrae la cronología oficial de VulnHub con <strong>Scrapling</strong>, ofrece consola de comandos 
-              simulada con captura de banderas, auditoría de métricas <strong>Web-Perf</strong> y validación visual 
+              aislada con captura de banderas, auditoría de métricas <strong>Web-Perf</strong> y validación visual 
               continua con <strong>Web-Design-Reviewer</strong>.
             </p>
 
@@ -225,7 +225,7 @@ export default function Home() {
               </div>
               <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
                 <div className="text-xl font-bold font-mono text-cyan-400">100%</div>
-                <div className="text-[11px] text-slate-400 font-mono mt-0.5">Simulador en Navegador</div>
+                <div className="text-[11px] text-slate-400 font-mono mt-0.5">Runtime aislado</div>
               </div>
               <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
                 <div className="text-xl font-bold font-mono text-amber-400">&lt; 350ms</div>
@@ -407,7 +407,7 @@ export default function Home() {
                 }`}
               >
                 <Terminal className="w-3.5 h-3.5" />
-                <span>Consola Simulada</span>
+                <span>Consola Ejecutable</span>
               </button>
 
               <button

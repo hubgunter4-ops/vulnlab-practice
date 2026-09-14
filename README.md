@@ -34,7 +34,7 @@ practice_environments + catalog_sync_runs
 trpc.catalog.list / trpc.catalog.status
               |
               v
-React Home.tsx + simulador de laboratorio
+React Home.tsx + runtime de laboratorio aislado
 ```
 
 El job se ejecuta como callback HTTP administrado por la plataforma. No se usan `setInterval`, `node-cron` ni procesos residentes dentro del contenedor.
