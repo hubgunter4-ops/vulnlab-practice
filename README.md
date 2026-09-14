@@ -1,103 +1,92 @@
-# VulnLab Practice Environment
+# VulnLab Control Center
 
-Entorno interactivo de práctica de ciberseguridad con catálogo base de VulnHub y entornos públicos de Hack The Box, TryHackMe y PortSwigger Web Security Academy.
+Centro de control web para explorar laboratorios de ciberseguridad, practicar con entornos aislados y consultar el estado general de la plataforma.
 
-La interfaz incluye una terminal de práctica con comandos reales allowlisted (`pwd`, `ls`, `find`, `cat`, `head`, `grep`, `whoami`, `id`) ejecutados en un workspace aislado por laboratorio. No hay shell arbitraria, sudo ni red; las flags siguen siendo ficticias. El backend añade un sincronizador periódico que extrae únicamente catálogos públicos con Scrapling y persiste los resultados en la base de datos.
+## Funciones de la página
 
-## Fuentes sincronizadas
+### Resumen ejecutivo
 
-- [VulnHub Timeline](https://www.vulnhub.com/timeline/)
-- [Hack The Box](https://www.hackthebox.com/)
-- [TryHackMe](https://tryhackme.com/)
-- [PortSwigger Web Security Academy](https://portswigger.net/web-security)
+- Muestra el estado operativo de la plataforma.
+- Presenta el número de entornos disponibles.
+- Indica laboratorios completados y porcentaje de avance.
+- Contabiliza banderas capturadas y puntos XP.
+- Muestra métricas observadas de rendimiento: LCP, TTFB, recursos cargados y transferencia inicial.
+- Resume la cobertura de laboratorios por plataforma.
+- Informa el estado de sincronización y aislamiento del workspace.
 
-La extracción no inicia sesión, no sortea CAPTCHA o controles de acceso, no descarga máquinas virtuales y no ejecuta exploits, payloads o credenciales. Cuando una fuente dinámica limita el inventario público, el sincronizador usa enlaces públicos curados y marca el registro como `curated-fallback`.
+### Catálogo de laboratorios
 
-## Arquitectura
+- Lista laboratorios procedentes de VulnHub y fuentes públicas.
+- Permite buscar por nombre, serie, categoría o habilidad.
+- Permite filtrar por categoría y dificultad.
+- Muestra fecha, plataforma, dificultad, categoría, habilidades y puntos XP.
+- Permite seleccionar un laboratorio para abrir su espacio de trabajo.
+- Identifica visualmente los laboratorios con progreso parcial o completo.
 
-```text
-Heartbeat HTTP cron (UTC, 06:00)
-              |
-              v
-POST /api/scheduled/sync-catalog
-              |
-              v
-server/scraplingSync.ts
-              |
-              v
-python3 scripts/scrapling_sync.py
-              |
-              v
-practice_environments + catalog_sync_runs
-              |
-              v
-trpc.catalog.list / trpc.catalog.status
-              |
-              v
-React Home.tsx + runtime de laboratorio aislado
-```
+### Ficha del laboratorio
 
-El job se ejecuta como callback HTTP administrado por la plataforma. No se usan `setInterval`, `node-cron` ni procesos residentes dentro del contenedor.
+- Presenta el objetivo activo y su nivel de dificultad.
+- Muestra la descripción y las habilidades asociadas.
+- Incluye referencias externas del laboratorio cuando están disponibles.
+- Expone el contexto de práctica y los criterios de avance.
 
-## Desarrollo local
+### Consola ejecutable
 
-Requisitos: Node.js 22, pnpm 10 y Python 3.11 o superior.
+- Ejecuta comandos permitidos dentro del workspace aislado del laboratorio.
+- Permite consultar archivos y evidencias con `pwd`, `ls`, `find`, `cat`, `head`, `grep`, `whoami` e `id`.
+- Incluye ayuda integrada y salida de comandos.
+- Permite enviar flags de práctica y registrar objetivos completados.
+- Bloquea comandos no permitidos, acceso de red y salida del workspace.
 
-```bash
-pnpm install
-python3 -m pip install --break-system-packages -r requirements.txt
-pnpm check
-pnpm test
-pnpm run build
-pnpm dev
-```
+### Pistas y objetivos
 
-El catálogo se prueba directamente con:
+- Muestra pistas metodológicas por laboratorio.
+- Organiza los objetivos de usuario y root.
+- Indica el estado de cada flag.
+- Actualiza la puntuación de la sesión al completar objetivos.
 
-```bash
-python3 scripts/scrapling_sync.py > /tmp/catalog.json
-```
+### Auditoría Web-Perf
 
-El backend ejecuta el mismo script mediante `server/scraplingSync.ts`. La consulta pública del catálogo está disponible en `catalog.list` y su última ejecución en `catalog.status`.
+- Permite revisar métricas de carga y estabilidad de la página.
+- Presenta LCP, FCP, CLS, TTFB, tiempo de carga, nodos DOM y recursos.
+- Permite volver a ejecutar la auditoría desde la interfaz.
+- Clasifica las métricas según umbrales de rendimiento.
 
-## Job periódico
+### Revisión de diseño
 
-El callback es:
+- Permite revisar accesibilidad, responsive, contraste y consistencia visual.
+- Organiza hallazgos por severidad.
+- Muestra recomendaciones de mejora para la interfaz.
 
-```text
-POST /api/scheduled/sync-catalog
-```
+### Estado de sesión
 
-La autenticación exige una identidad cron válida. El handler comprueba `user.isCron` y `user.taskUid`, busca la fila de configuración por `scheduleCronTaskUid`, y responde `2xx` sin trabajo si el job está huérfano o deshabilitado.
+- Muestra la sesión activa y la puntuación acumulada.
+- Conserva el progreso durante la interacción actual con la página.
+- Permite consultar el estado general desde el encabezado del centro de control.
 
-Después de desplegar la aplicación, se crea un Heartbeat de proyecto con una expresión de seis campos UTC, por ejemplo:
+## Estructura de carpetas
 
 ```text
-0 0 6 * * *
+client/
+├── public/                 Recursos públicos pequeños
+└── src/
+    ├── components/         Consola, auditorías, logo y componentes visuales
+    ├── contexts/           Contextos globales de la interfaz
+    ├── data/               Catálogos y blueprints de laboratorios
+    ├── hooks/              Hooks reutilizables
+    ├── lib/                Cliente de comunicación de la aplicación
+    └── pages/              Pantallas principales, incluida Home.tsx
+
+docs/                       Documentación complementaria
+scripts/                    Utilidades de catálogo y validación
+server/                     Servicios de la aplicación
+shared/                     Tipos y constantes compartidas
+drizzle/                    Esquema y migraciones de datos
 ```
 
-La configuración persistente se almacena en `catalog_sync_settings`; las ejecuciones se registran en `catalog_sync_runs`.
+## Plataformas representadas
 
-## Producción
-
-El `Dockerfile` instala Python 3 y Scrapling en la imagen Node 22. El servidor escucha en `process.env.PORT` y sirve tanto el frontend compilado como el backend Express.
-
-Antes de crear el job periódico, la aplicación debe estar desplegada en una URL de producción alcanzable por la plataforma. El preview local del sandbox sirve para validar, pero no debe usarse como callback permanente.
-
-## Estructura principal
-
-```text
-client/src/pages/Home.tsx       UI y catálogo combinado
-scripts/scrapling_sync.py       extracción pública y normalización
-server/scraplingSync.ts         puente Node → Python → DB
-server/scheduled.ts              callback Heartbeat protegido
-server/db.ts                     helpers de persistencia
-server/routers.ts                consultas tRPC catalog.list/status
-server/_core/index.ts            montaje de /api/scheduled/*
-drizzle/schema.ts                tablas del catálogo y jobs
-Dockerfile                       Node + Python + Scrapling
-```
-
-## Seguridad y alcance
-
-El proyecto ofrece **ejecución real de comandos seguros dentro de un workspace efímero y sin red**. No conecta el navegador a máquinas vulnerables reales, no acepta operadores de shell, no permite salir del workspace y no ejecuta instrucciones recibidas desde el catálogo externo. Los flags son ficticios y se generan localmente a partir del identificador del entorno. Cualquier laboratorio con vulnerabilidades reales debe ejecutarse en infraestructura aislada independiente, únicamente con autorización explícita y respetando los términos de cada plataforma.
+- VulnHub
+- Hack The Box
+- TryHackMe
+- PortSwigger Web Security Academy
