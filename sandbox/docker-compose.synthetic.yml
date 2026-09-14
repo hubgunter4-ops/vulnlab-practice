@@ -1,0 +1,24 @@
+services:
+  synthetic-lab:
+    build:
+      context: ./synthetic-lab
+    image: vulnlab/synthetic-lab:local
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    networks:
+      - practice_internal
+    restart: "no"
+
+networks:
+  practice_internal:
+    internal: true
+    driver: bridge
+

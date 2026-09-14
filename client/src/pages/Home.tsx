@@ -61,11 +61,24 @@ export default function Home() {
     });
     return machines;
   }, []);
+  const [generatedMachine, setGeneratedMachine] = useState<PracticeMachine | null>(null);
+  const [agentRequest, setAgentRequest] = useState("");
+  const [agentProvider, setAgentProvider] = useState<"builtin" | "custom">("builtin");
+  const [agentEndpoint, setAgentEndpoint] = useState("");
+  const [agentApiKey, setAgentApiKey] = useState("");
+  const [agentModel, setAgentModel] = useState("");
+  const generateLab = trpc.lab.generate.useMutation({
+    onSuccess: (machine) => {
+      setGeneratedMachine(machine as PracticeMachine);
+      setSelectedMachineId(machine.id);
+    },
+  });
   const allMachines = useMemo<PracticeMachine[]>(() => [
     ...labsData.machines,
     ...blueprintMachines,
     ...externalMachines,
-  ], [blueprintMachines, externalMachines]);
+    ...(generatedMachine ? [generatedMachine] : []),
+  ], [blueprintMachines, externalMachines, generatedMachine]);
   const categories = useMemo(() => {
     const values = labsData.categories.map((category) => category.name);
     externalMachines.forEach((machine) => { if (!values.includes(machine.category)) values.push(machine.category); });
@@ -323,6 +336,34 @@ export default function Home() {
             </select>
           </div>
         </div>
+
+        {filteredMachines.length === 0 && (
+          <section className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-5 shadow-lg">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-emerald-300 font-mono text-xs font-bold uppercase tracking-wider"><Sparkles className="h-4 w-4" /> Agente de laboratorios</div>
+                <h2 className="mt-2 text-lg font-bold text-slate-100">No encontramos ese entorno</h2>
+                <p className="mt-1 max-w-2xl text-sm text-slate-400">Describe el laboratorio que necesitas. El agente generará un blueprint educativo, ficticio y reproducible para incorporarlo a esta sesión.</p>
+              </div>
+              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-mono text-emerald-300">Sin red · sin exploits · workspace aislado</span>
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_180px_140px]">
+              <textarea value={agentRequest} onChange={(event) => setAgentRequest(event.target.value)} placeholder="Ej.: laboratorio Linux intermedio sobre análisis de logs y hardening de un servicio web ficticio" className="min-h-24 w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500/60 focus:outline-none" maxLength={600} />
+              <div className="space-y-2">
+                <label className="block text-[11px] font-mono text-slate-400">Proveedor LLM</label>
+                <select value={agentProvider} onChange={(event) => setAgentProvider(event.target.value as "builtin" | "custom")} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-mono text-slate-200"><option value="builtin">LLM integrado</option><option value="custom">API configurable</option></select>
+                {agentProvider === "custom" && <input value={agentEndpoint} onChange={(event) => setAgentEndpoint(event.target.value)} placeholder="https://api..." className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200" />}
+                {agentProvider === "custom" && <input value={agentModel} onChange={(event) => setAgentModel(event.target.value)} placeholder="Modelo (opcional)" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200" />}
+              </div>
+              <div className="flex flex-col gap-2">
+                {agentProvider === "custom" && <input type="password" value={agentApiKey} onChange={(event) => setAgentApiKey(event.target.value)} placeholder="API key temporal" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200" autoComplete="off" />}
+                <button type="button" disabled={generateLab.isPending || agentRequest.trim().length < 8} onClick={() => generateLab.mutate({ request: agentRequest, provider: agentProvider, endpoint: agentEndpoint || undefined, apiKey: agentApiKey || undefined, model: agentModel || undefined })} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-bold text-slate-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"><Sparkles className="h-4 w-4" />{generateLab.isPending ? "Generando…" : "Crear laboratorio"}</button>
+                <p className="text-[10px] leading-relaxed text-slate-500">La API key configurable se usa solo durante esta solicitud y no se guarda.</p>
+              </div>
+            </div>
+            {generateLab.error && <p className="mt-3 text-xs font-mono text-rose-300">{generateLab.error.message}</p>}
+          </section>
+        )}
 
         {/* Layout en Grid: Lista de Laboratorios a la izquierda y Espacio de Trabajo a la derecha */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

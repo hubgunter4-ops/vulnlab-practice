@@ -5,6 +5,7 @@ import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { runScraplingSync } from "./scraplingSync";
 import { executeLabCommand } from "./labRuntime";
+import { generateLabBlueprint } from "./labAgent";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -45,6 +46,15 @@ export const appRouter = router({
   }),
 
   lab: router({
+    generate: publicProcedure
+      .input(z.object({
+        request: z.string().min(8).max(600),
+        provider: z.enum(["builtin", "custom"]),
+        endpoint: z.string().url().max(300).optional(),
+        apiKey: z.string().min(8).max(500).optional(),
+        model: z.string().max(120).optional(),
+      }))
+      .mutation(async ({ input }) => generateLabBlueprint(input)),
     execute: publicProcedure
       .input(z.object({ labId: z.string().min(1).max(120), command: z.string().min(1).max(220) }))
       .mutation(async ({ input }) => {

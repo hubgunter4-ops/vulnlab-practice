@@ -1,0 +1,7 @@
+{
+  "title": "Synthetic Web Evidence",
+  "notice": "All records are fictional and intended for authorized practice.",
+  "services": ["http:8080"],
+  "network": "internal-only",
+  "learning_goals": ["read evidence", "document observations", "propose remediation"]
+}

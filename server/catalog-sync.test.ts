@@ -27,6 +27,26 @@ describe("catalog synchronization", () => {
     expect(network.output).toContain("no tiene red");
   });
 
+  it("runs generated lab ids in the same isolated sandbox", async () => {
+    const generated = await executeLabCommand("generated-forensic-lab-123", "cat README.md");
+    const network = await executeLabCommand("generated-forensic-lab-123", "curl https://example.com");
+
+    expect(generated.exitCode).toBe(0);
+    expect(generated.output).toContain("Workspace sintético y aislado");
+    expect(network.exitCode).toBe(126);
+    expect(network.output).toContain("no tiene red");
+  });
+
+  it("rejects private custom LLM endpoints", async () => {
+    const caller = appRouter.createCaller({ user: null, req: {} as never, res: {} as never });
+    await expect(caller.lab.generate({
+      request: "laboratorio de análisis forense sintético",
+      provider: "custom",
+      endpoint: "http://127.0.0.1:9000",
+      apiKey: "temporary-test-key",
+    })).rejects.toThrow("endpoint público");
+  });
+
   it("exposes a public catalog query even when the database is unavailable", async () => {
     const caller = appRouter.createCaller({
       user: null,

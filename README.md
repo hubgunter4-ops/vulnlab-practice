@@ -38,6 +38,16 @@ Centro de control web para explorar laboratorios de ciberseguridad, practicar co
 - Permite enviar flags de práctica y registrar objetivos completados.
 - Bloquea comandos no permitidos, acceso de red y salida del workspace.
 
+### Agente de creación de laboratorios
+
+Cuando una búsqueda no encuentra un entorno, el usuario puede describir el laboratorio que necesita. El agente genera un blueprint educativo, ficticio y reproducible mediante el LLM integrado o una API compatible configurable. El blueprint se ejecuta en el sandbox de práctica y no despliega por sí mismo una máquina vulnerable.
+
+Los entornos sintéticos opcionales para un host Docker autorizado utilizan una red interna desechable sin puertos públicos, usuario sin privilegios, filesystem de solo lectura, `no-new-privileges`, capacidades eliminadas y límites de CPU, memoria y procesos. En WebDev, donde Docker no está disponible, se conserva el fallback seguro de workspace allowlistado sin red. Las API keys configurables se usan solo durante la solicitud y no se guardan.
+
+### Agente de creación de laboratorios
+
+Cuando una búsqueda no encuentra un entorno, el usuario puede describir el laboratorio que necesita. El agente genera un blueprint educativo para la sesión usando el LLM integrado o una API compatible configurable. El blueprint se ejecuta exclusivamente en el sandbox de práctica: workspace efímero, comandos allowlistados, sin red, sin shell arbitraria, sin sudo y sin despliegue de máquinas vulnerables reales. Las API keys configurables se usan solo durante la solicitud y no se guardan.
+
 ### Pistas y objetivos
 
 - Muestra pistas metodológicas por laboratorio.
