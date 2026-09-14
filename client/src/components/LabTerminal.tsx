@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Terminal as TerminalIcon, Play, RotateCcw, Copy, Check, Sparkles, Shield, AlertTriangle } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface TerminalProps {
   machine: {
@@ -51,6 +52,7 @@ export const LabTerminal: React.FC<TerminalProps> = ({
   ]);
   const [copied, setCopied] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const executeCommand = trpc.lab.execute.useMutation();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -77,7 +79,7 @@ export const LabTerminal: React.FC<TerminalProps> = ({
     ]);
   }, [machine.id]);
 
-  const handleRunCommand = (e: React.FormEvent) => {
+  const handleRunCommand = async (e: React.FormEvent) => {
     e.preventDefault();
     const cmd = inputVal.trim();
     if (!cmd) return;
@@ -95,22 +97,7 @@ export const LabTerminal: React.FC<TerminalProps> = ({
       return;
     }
 
-    if (lower === "help") {
-      newLogs.push({
-        id: (Date.now() + 1).toString(),
-        type: "output",
-        text: `Comandos disponibles en el entorno de práctica:
-  • help               Muestra este menú de ayuda
-  • scan / nmap        Ejecuta escaneo de puertos sobre ${machine.terminal.initial_host}
-  • enum / gobuster    Fuzzing de rutas HTTP y parámetros vulnerables
-  • exploit            Lanza simulación del vector de explotación inicial
-  • privesc            Analiza vectores de escalada de privilegios locales
-  • hint               Revela la pista de la fase actual
-  • submit <flag>      Valida y canjea la bandera de usuario o root
-  • whoami / id        Muestra tu contexto de sesión actual
-  • clear              Limpia la pantalla de la consola`,
-      });
-    } else if (lower.startsWith("submit ")) {
+    if (lower.startsWith("submit ")) {
       const submitted = cmd.substring(7).trim();
       if (submitted === machine.flag_user) {
         newLogs.push({
@@ -133,77 +120,12 @@ export const LabTerminal: React.FC<TerminalProps> = ({
           text: `[-] Flag inválida. Verifica sintaxis o continúa la enumeración de la máquina.`,
         });
       }
-    } else if (lower.includes("nmap") || lower === "scan") {
-      newLogs.push({
-        id: (Date.now() + 1).toString(),
-        type: "output",
-        text: `Starting Nmap 7.94 ( https://nmap.org ) at ${new Date().toLocaleTimeString()} UTC
-Nmap scan report for ${machine.terminal.initial_host} (10.10.10.x)
-Host is up (0.021s latency).
-PORT     STATE SERVICE VERSION
-${machine.terminal.ports.split(", ").map(p => p.replace("/", "/")).join("\n")}
-Service detection performed. 1 host up scanned in 4.12 seconds.`,
-      });
-    } else if (lower.includes("gobuster") || lower === "enum") {
-      newLogs.push({
-        id: (Date.now() + 1).toString(),
-        type: "output",
-        text: `===============================================================
-Gobuster v3.6 - Directory & File Enumeration Mode
-===============================================================
-[+] Url:                     http://${machine.terminal.initial_host}/
-[+] Threads:                 30
-[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
-===============================================================
-/index.html          (Status: 200) [Size: 1420]
-/admin               (Status: 301) [Size: 284] --> /admin/
-/api/v1/auth         (Status: 403) [Size: 182]
-/robots.txt          (Status: 200) [Size: 84] (Disallow: /backup_vault/)
-===============================================================`,
-      });
-    } else if (lower === "exploit") {
-      newLogs.push({
-        id: (Date.now() + 1).toString(),
-        type: "output",
-        text: `[*] Enviando payload de auditoría al objetivo...
-[+] Inyección confirmada! Spawned pseudo-terminal interactiva.
-$ id
-uid=1001(developer) gid=1001(developer) groups=1001(developer)
-$ cat /home/developer/user.txt
-${machine.flag_user}
-[i] Pega esta flag con 'submit ${machine.flag_user}'`,
-      });
-    } else if (lower === "privesc") {
-      newLogs.push({
-        id: (Date.now() + 1).toString(),
-        type: "output",
-        text: `[*] Comprobando vectores de escalada de privilegios...
-[+] Inspeccionando binarios SUID y sudoers:
-    (root) NOPASSWD: /usr/local/bin/backup-sync.sh
-    SUID: /usr/bin/pkexec, /usr/bin/passwd
-[+] Inspección de variables de entorno: PATH=/tmp:$PATH (Inseguro!)
-[+] Root flag encontrada en /root/root.txt:
-${machine.flag_root}
-[i] Pega esta flag con 'submit ${machine.flag_root}'`,
-      });
-    } else if (lower === "hint") {
-      const hint = machine.hints[Math.floor(Math.random() * machine.hints.length)];
-      newLogs.push({
-        id: (Date.now() + 1).toString(),
-        type: "system",
-        text: `[PISTA TÉCNICA] ${hint}`,
-      });
-    } else if (lower === "whoami") {
-      newLogs.push({
-        id: (Date.now() + 1).toString(),
-        type: "output",
-        text: `pentester (Red Team Operator) - Laboratorio VulnLab`,
-      });
     } else {
+      const result = await executeCommand.mutateAsync({ labId: machine.id, command: cmd });
       newLogs.push({
         id: (Date.now() + 1).toString(),
-        type: "error",
-        text: `bash: ${cmd}: comando no reconocido. Escribe 'help' para ver los comandos interactivos soportados.`,
+        type: result.exitCode === 0 ? "output" : "error",
+        text: result.output,
       });
     }
 
@@ -285,14 +207,14 @@ ${machine.flag_root}
 
       {/* Entrada de Comandos */}
       <form onSubmit={handleRunCommand} className="flex items-center border-t border-slate-800 bg-slate-900/80 px-3 py-2">
-        <span className="text-emerald-400 font-mono text-xs font-bold mr-2 select-none">
-          root@vulnlab:~#
+          <span className="text-emerald-400 font-mono text-xs font-bold mr-2 select-none">
+          student@vulnlab:~$
         </span>
         <input
           type="text"
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
-          placeholder="Escribe 'help', 'scan', 'exploit', 'privesc' o 'submit <flag>'..."
+          placeholder="Escribe 'help', 'find', 'cat', 'grep' o 'submit <flag>'..."
           className="flex-1 bg-transparent border-0 outline-none font-mono text-xs text-slate-100 placeholder:text-slate-500"
           autoFocus
         />

@@ -7,6 +7,7 @@ import {
   Layers, Zap, AlertCircle, RefreshCw, Radio
 } from "lucide-react";
 import labsData from "../data/vulnhub_labs.json";
+import blueprintData from "../data/practice_blueprints.json";
 import { Logo3DAnimation } from "../components/Logo3DAnimation";
 import { LabTerminal } from "../components/LabTerminal";
 import { WebPerfAuditor } from "../components/WebPerfAuditor";
@@ -50,7 +51,18 @@ export default function Home() {
       suggested_cmd: `nmap -sC -sV ${environment.sourceId}.vulnlab.local`,
     },
   })), [syncedEnvironments]);
-  const allMachines = useMemo<PracticeMachine[]>(() => [...labsData.machines, ...externalMachines], [externalMachines]);
+  const blueprintMachines = useMemo<PracticeMachine[]>(() => {
+    const machines: PracticeMachine[] = [];
+    blueprintData.platforms.forEach((platform) => {
+      platform.labs.forEach((lab) => machines.push(lab as PracticeMachine));
+    });
+    return machines;
+  }, []);
+  const allMachines = useMemo<PracticeMachine[]>(() => [
+    ...labsData.machines,
+    ...blueprintMachines,
+    ...externalMachines,
+  ], [blueprintMachines, externalMachines]);
   const categories = useMemo(() => {
     const values = labsData.categories.map((category) => category.name);
     externalMachines.forEach((machine) => { if (!values.includes(machine.category)) values.push(machine.category); });

@@ -4,6 +4,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { runScraplingSync } from "./scraplingSync";
+import { executeLabCommand } from "./labRuntime";
+import { z } from "zod";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -40,6 +42,21 @@ export const appRouter = router({
       };
     }),
     syncNow: adminProcedure.mutation(async () => runScraplingSync()),
+  }),
+
+  lab: router({
+    execute: publicProcedure
+      .input(z.object({ labId: z.string().min(1).max(120), command: z.string().min(1).max(220) }))
+      .mutation(async ({ input }) => {
+        try {
+          return await executeLabCommand(input.labId, input.command);
+        } catch (error) {
+          return {
+            output: error instanceof Error ? error.message : "Comando rechazado por el sandbox.",
+            exitCode: 126,
+          };
+        }
+      }),
   }),
 
   // TODO: add feature routers here, e.g.

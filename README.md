@@ -2,7 +2,7 @@
 
 Entorno interactivo de práctica de ciberseguridad con catálogo base de VulnHub y entornos públicos de Hack The Box, TryHackMe y PortSwigger Web Security Academy.
 
-La interfaz conserva el simulador seguro de consola, pistas, flags ficticias, auditoría Web-Perf, revisión visual y logotipo 3D. El backend añade un sincronizador periódico que extrae únicamente catálogos públicos con Scrapling y persiste los resultados en la base de datos.
+La interfaz incluye una terminal de práctica con comandos reales allowlisted (`pwd`, `ls`, `find`, `cat`, `head`, `grep`, `whoami`, `id`) ejecutados en un workspace aislado por laboratorio. No hay shell arbitraria, sudo ni red; las flags siguen siendo ficticias. El backend añade un sincronizador periódico que extrae únicamente catálogos públicos con Scrapling y persiste los resultados en la base de datos.
 
 ## Fuentes sincronizadas
 
@@ -100,4 +100,4 @@ Dockerfile                       Node + Python + Scrapling
 
 ## Seguridad y alcance
 
-El proyecto ofrece un **simulador de comandos**. No conecta el navegador a máquinas vulnerables reales ni ejecuta instrucciones recibidas desde el catálogo externo. Los flags son ficticios y se generan localmente a partir del identificador del entorno. Cualquier uso de máquinas reales debe realizarse únicamente con autorización explícita, dentro de redes de laboratorio aisladas y respetando los términos de cada plataforma.
+El proyecto ofrece **ejecución real de comandos seguros dentro de un workspace efímero y sin red**. No conecta el navegador a máquinas vulnerables reales, no acepta operadores de shell, no permite salir del workspace y no ejecuta instrucciones recibidas desde el catálogo externo. Los flags son ficticios y se generan localmente a partir del identificador del entorno. Cualquier laboratorio con vulnerabilidades reales debe ejecutarse en infraestructura aislada independiente, únicamente con autorización explícita y respetando los términos de cada plataforma.
