@@ -1,0 +1,1198 @@
+{
+  "source": "https://www.vulnhub.com/timeline/",
+  "retrieved_at": "2026-09-14",
+  "total_machines": 36,
+  "categories": [
+    {
+      "name": "Web Exploitation",
+      "badge": "WEB",
+      "icon": "Globe"
+    },
+    {
+      "name": "Privilege Escalation",
+      "badge": "PRIVESC",
+      "icon": "ShieldAlert"
+    },
+    {
+      "name": "Linux / Misconfig",
+      "badge": "CONFIG",
+      "icon": "Terminal"
+    },
+    {
+      "name": "Reverse & Binary",
+      "badge": "PWN",
+      "icon": "Cpu"
+    },
+    {
+      "name": "Network & Crypto",
+      "badge": "CRYPTO",
+      "icon": "KeyRound"
+    },
+    {
+      "name": "Active Directory / Pivoting",
+      "badge": "PIVOT",
+      "icon": "Network"
+    }
+  ],
+  "difficulties": [
+    "Easy",
+    "Intermediate",
+    "Medium",
+    "Hard",
+    "Insane"
+  ],
+  "machines": [
+    {
+      "id": "vh-001",
+      "slug": "matrix-breakout-2-morpheus,757",
+      "title": "Matrix-Breakout: 2 Morpheus",
+      "date": "2022/07/11",
+      "vulnhub_url": "https://www.vulnhub.com/entry/matrix-breakout-2-morpheus,757/",
+      "series": "Matrix-Breakout",
+      "difficulty": "Easy",
+      "category": "Web Exploitation",
+      "category_badge": "WEB",
+      "points": 100,
+      "summary": "Máquina orientada a evasión de restricciones y escalada de privilegios a través de debilidades de configuración y servicios locales.",
+      "skills": [
+        "Nmap Port Scan",
+        "Directory Fuzzing",
+        "Cronjob Misconfiguration",
+        "Kernel/Capability Abuse"
+      ],
+      "hints": [
+        "Fase 1: Identifica servicios HTTP en puertos no estándar y busca rutas ocultas con gobuster/feroxbuster.",
+        "Fase 2: Revisa permisos de lectura en scripts programados o sockets UNIX expuestos.",
+        "Fase 3: Explota variables de entorno o capacidades POSIX para elevar permisos a root."
+      ],
+      "flag_user": "flag{usr_morpheus_subversion_ok}",
+      "flag_root": "flag{root_morpheus_matrix_liberated}",
+      "cve_reference": "CVE-2021-3493 / Local SUID misconfig",
+      "terminal": {
+        "initial_host": "victim.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http (Apache/2.4.41), 8080/tcp open http-proxy",
+        "suggested_cmd": "nmap -sC -sV 10.10.10.75"
+      }
+    },
+    {
+      "id": "vh-002",
+      "slug": "jangow-101,754",
+      "title": "Jangow: 1.0.1",
+      "date": "2021/11/04",
+      "vulnhub_url": "https://www.vulnhub.com/entry/jangow-101,754/",
+      "series": "Jangow",
+      "difficulty": "Intermediate",
+      "category": "Privilege Escalation",
+      "category_badge": "PRIVESC",
+      "points": 137,
+      "summary": "Vulnerabilidad de inyección en endpoints web con ejecución de comandos remotos (RCE) y elevación por credenciales filtradas.",
+      "skills": [
+        "Command Injection",
+        "Reverse Shell Spawning",
+        "Sudoers Inspection",
+        "Password Hash Cracking"
+      ],
+      "hints": [
+        "Prueba el parámetro HTTP `site=` o `page=` agregando delimitadores de bash (`;`, `&&`, `|`).",
+        "Obtén una shell reversa conectándote a tu listener de Netcat.",
+        "Ejecuta `sudo -l` para verificar qué binarios se ejecutan como root sin contraseña."
+      ],
+      "flag_user": "flag{usr_jangow_remote_exec_found}",
+      "flag_root": "flag{root_jangow_system_privs_won}",
+      "cve_reference": "OWASP Top 10 - A03: Injection & Sudo Rules",
+      "terminal": {
+        "initial_host": "jangow.vulnlab.local",
+        "ports": "21/tcp open ftp (vsftpd 3.0.3), 80/tcp open http (PHP/7.4.3)",
+        "suggested_cmd": "curl -s http://10.10.10.76/?site=127.0.0.1%3Bid"
+      }
+    },
+    {
+      "id": "vh-003",
+      "slug": "web-machine-n7,756",
+      "title": "Web Machine: (N7)",
+      "date": "2021/11/03",
+      "vulnhub_url": "https://www.vulnhub.com/entry/web-machine-n7,756/",
+      "series": "Web Machine",
+      "difficulty": "Medium",
+      "category": "Linux / Misconfig",
+      "category_badge": "CONFIG",
+      "points": 174,
+      "summary": "Entorno basado en reconocimiento estricto de microservicios y contenedorización con escape a nodo anfitrión.",
+      "skills": [
+        "Docker Container Escape",
+        "API Reconnaissance",
+        "JWT Tampering",
+        "Capabilities Pwn"
+      ],
+      "hints": [
+        "Descubre cabeceras HTTP de autorización e inspecciona la firma de los tokens JWT emitidos.",
+        "Una vez dentro del contenedor, revisa si `/var/run/docker.sock` está montado.",
+        "Aprovecha el socket para instanciar un contenedor con montaje del sistema de archivos `/` del host."
+      ],
+      "flag_user": "flag{usr_webn7_token_forgery}",
+      "flag_root": "flag{root_webn7_docker_socket_escape}",
+      "cve_reference": "Docker Socket Mounted / JWT None-Algorithm",
+      "terminal": {
+        "initial_host": "n7.vulnlab.local",
+        "ports": "80/tcp open http, 443/tcp open ssl/http, 5000/tcp open docker-registry",
+        "suggested_cmd": "docker -H unix:///var/run/docker.sock run -v /:/host -it alpine"
+      }
+    },
+    {
+      "id": "vh-004",
+      "slug": "the-planets-earth,755",
+      "title": "The Planets: Earth",
+      "date": "2021/11/02",
+      "vulnhub_url": "https://www.vulnhub.com/entry/the-planets-earth,755/",
+      "series": "The Planets",
+      "difficulty": "Hard",
+      "category": "Reverse & Binary",
+      "category_badge": "PWN",
+      "points": 211,
+      "summary": "Reto astronómico centrado en ofuscación en capas, esteganografía y elevación mediante tareas programadas.",
+      "skills": [
+        "Steganography / Exif",
+        "Binary Reversing",
+        "Chroot Breakout",
+        "SUID Exploitation"
+      ],
+      "hints": [
+        "Examina los metadatos de las imágenes servidas en el portal principal.",
+        "Descifra la cadena en base64 con la clave XOR oculta en el archivo robots.txt.",
+        "Analiza el binario SUID con `strings` o `ltrace` para alterar su flujo condicional."
+      ],
+      "flag_user": "flag{usr_earth_message_decoded}",
+      "flag_root": "flag{root_earth_core_control_obtained}",
+      "cve_reference": "Custom XOR cipher & SUID binary logic flaw",
+      "terminal": {
+        "initial_host": "earth.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http, 443/tcp open https",
+        "suggested_cmd": "strings /usr/bin/reset_root"
+      }
+    },
+    {
+      "id": "vh-005",
+      "slug": "red-1,753",
+      "title": "Red: 1",
+      "date": "2021/10/27",
+      "vulnhub_url": "https://www.vulnhub.com/entry/red-1,753/",
+      "series": "Red",
+      "difficulty": "Insane",
+      "category": "Network & Crypto",
+      "category_badge": "CRYPTO",
+      "points": 248,
+      "summary": "Desafío de intrusión con filtrado en formularios, SQLi no ciega y manipulación de binarios de scripting.",
+      "skills": [
+        "SQL Injection",
+        "Database Dumping",
+        "Python Library Hijacking",
+        "Hashcat Cracking"
+      ],
+      "hints": [
+        "Intercepta la petición de búsqueda y aplica payloads `UNION SELECT` para enumerar esquemas.",
+        "Recupera las credenciales del usuario de base de datos y crackea el hash SHA-256.",
+        "Verifica el orden de carga de módulos Python (`sys.path`) para interceptar una importación en un script root."
+      ],
+      "flag_user": "flag{usr_red_db_creds_extracted}",
+      "flag_root": "flag{root_red_sysadmin_pwned_all}",
+      "cve_reference": "SQL Injection & Python PYTHONPATH Hijacking",
+      "terminal": {
+        "initial_host": "red.vulnlab.local",
+        "ports": "80/tcp open http (nginx/1.18.0), 3306/tcp filtered mysql",
+        "suggested_cmd": "sqlmap -u 'http://10.10.10.78/search.php?id=1' --dbs"
+      }
+    },
+    {
+      "id": "vh-006",
+      "slug": "napping-101,752",
+      "title": "Napping: 1.0.1",
+      "date": "2021/10/22",
+      "vulnhub_url": "https://www.vulnhub.com/entry/napping-101,752/",
+      "series": "Napping",
+      "difficulty": "Easy",
+      "category": "Active Directory / Pivoting",
+      "category_badge": "PIVOT",
+      "points": 285,
+      "summary": "Auditoría de autenticación OAuth simulada, explotación de deserialización insegura y escalada con capacidades de Linux.",
+      "skills": [
+        "Insecure Deserialization",
+        "SSRF Exploitation",
+        "Linux Capabilities",
+        "GTFOBins Abuse"
+      ],
+      "hints": [
+        "Analiza el parámetro de estado y cookie que almacena objetos serializados en base64.",
+        "Genera un payload de deserialización que ejecute un reverse shell hacia tu IP.",
+        "Busca capacidades activas con `getcap -r / 2>/dev/null` e inspecciona binarios con `cap_setuid`."
+      ],
+      "flag_user": "flag{usr_napping_pickle_payload}",
+      "flag_root": "flag{root_napping_cap_setuid_won}",
+      "cve_reference": "Python Pickle RCE / cap_setuid+ep",
+      "terminal": {
+        "initial_host": "napping.vulnlab.local",
+        "ports": "5000/tcp open http (Werkzeug/2.0.1 Python/3.9.5)",
+        "suggested_cmd": "getcap -r / 2>/dev/null"
+      }
+    },
+    {
+      "id": "vh-007",
+      "slug": "empire-lupinone,750",
+      "title": "Empire: LupinOne",
+      "date": "2021/10/21",
+      "vulnhub_url": "https://www.vulnhub.com/entry/empire-lupinone,750/",
+      "series": "Empire",
+      "difficulty": "Intermediate",
+      "category": "Web Exploitation",
+      "category_badge": "WEB",
+      "points": 322,
+      "summary": "Máquina orientada a evasión de restricciones y escalada de privilegios a través de debilidades de configuración y servicios locales.",
+      "skills": [
+        "Nmap Port Scan",
+        "Directory Fuzzing",
+        "Cronjob Misconfiguration",
+        "Kernel/Capability Abuse"
+      ],
+      "hints": [
+        "Fase 1: Identifica servicios HTTP en puertos no estándar y busca rutas ocultas con gobuster/feroxbuster.",
+        "Fase 2: Revisa permisos de lectura en scripts programados o sockets UNIX expuestos.",
+        "Fase 3: Explota variables de entorno o capacidades POSIX para elevar permisos a root."
+      ],
+      "flag_user": "flag{usr_morpheus_subversion_ok}",
+      "flag_root": "flag{root_morpheus_matrix_liberated}",
+      "cve_reference": "CVE-2021-3493 / Local SUID misconfig",
+      "terminal": {
+        "initial_host": "victim.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http (Apache/2.4.41), 8080/tcp open http-proxy",
+        "suggested_cmd": "nmap -sC -sV 10.10.10.75"
+      }
+    },
+    {
+      "id": "vh-008",
+      "slug": "empire-breakout,751",
+      "title": "Empire: Breakout",
+      "date": "2021/10/21",
+      "vulnhub_url": "https://www.vulnhub.com/entry/empire-breakout,751/",
+      "series": "Empire",
+      "difficulty": "Medium",
+      "category": "Privilege Escalation",
+      "category_badge": "PRIVESC",
+      "points": 359,
+      "summary": "Vulnerabilidad de inyección en endpoints web con ejecución de comandos remotos (RCE) y elevación por credenciales filtradas.",
+      "skills": [
+        "Command Injection",
+        "Reverse Shell Spawning",
+        "Sudoers Inspection",
+        "Password Hash Cracking"
+      ],
+      "hints": [
+        "Prueba el parámetro HTTP `site=` o `page=` agregando delimitadores de bash (`;`, `&&`, `|`).",
+        "Obtén una shell reversa conectándote a tu listener de Netcat.",
+        "Ejecuta `sudo -l` para verificar qué binarios se ejecutan como root sin contraseña."
+      ],
+      "flag_user": "flag{usr_jangow_remote_exec_found}",
+      "flag_root": "flag{root_jangow_system_privs_won}",
+      "cve_reference": "OWASP Top 10 - A03: Injection & Sudo Rules",
+      "terminal": {
+        "initial_host": "jangow.vulnlab.local",
+        "ports": "21/tcp open ftp (vsftpd 3.0.3), 80/tcp open http (PHP/7.4.3)",
+        "suggested_cmd": "curl -s http://10.10.10.76/?site=127.0.0.1%3Bid"
+      }
+    },
+    {
+      "id": "vh-009",
+      "slug": "thales-1,749",
+      "title": "Thales: 1",
+      "date": "2021/10/16",
+      "vulnhub_url": "https://www.vulnhub.com/entry/thales-1,749/",
+      "series": "Thales",
+      "difficulty": "Hard",
+      "category": "Linux / Misconfig",
+      "category_badge": "CONFIG",
+      "points": 396,
+      "summary": "Entorno basado en reconocimiento estricto de microservicios y contenedorización con escape a nodo anfitrión.",
+      "skills": [
+        "Docker Container Escape",
+        "API Reconnaissance",
+        "JWT Tampering",
+        "Capabilities Pwn"
+      ],
+      "hints": [
+        "Descubre cabeceras HTTP de autorización e inspecciona la firma de los tokens JWT emitidos.",
+        "Una vez dentro del contenedor, revisa si `/var/run/docker.sock` está montado.",
+        "Aprovecha el socket para instanciar un contenedor con montaje del sistema de archivos `/` del host."
+      ],
+      "flag_user": "flag{usr_webn7_token_forgery}",
+      "flag_root": "flag{root_webn7_docker_socket_escape}",
+      "cve_reference": "Docker Socket Mounted / JWT None-Algorithm",
+      "terminal": {
+        "initial_host": "n7.vulnlab.local",
+        "ports": "80/tcp open http, 443/tcp open ssl/http, 5000/tcp open docker-registry",
+        "suggested_cmd": "docker -H unix:///var/run/docker.sock run -v /:/host -it alpine"
+      }
+    },
+    {
+      "id": "vh-010",
+      "slug": "ica-1,748",
+      "title": "ICA: 1",
+      "date": "2021/09/25",
+      "vulnhub_url": "https://www.vulnhub.com/entry/ica-1,748/",
+      "series": "ICA",
+      "difficulty": "Insane",
+      "category": "Reverse & Binary",
+      "category_badge": "PWN",
+      "points": 433,
+      "summary": "Reto astronómico centrado en ofuscación en capas, esteganografía y elevación mediante tareas programadas.",
+      "skills": [
+        "Steganography / Exif",
+        "Binary Reversing",
+        "Chroot Breakout",
+        "SUID Exploitation"
+      ],
+      "hints": [
+        "Examina los metadatos de las imágenes servidas en el portal principal.",
+        "Descifra la cadena en base64 con la clave XOR oculta en el archivo robots.txt.",
+        "Analiza el binario SUID con `strings` o `ltrace` para alterar su flujo condicional."
+      ],
+      "flag_user": "flag{usr_earth_message_decoded}",
+      "flag_root": "flag{root_earth_core_control_obtained}",
+      "cve_reference": "Custom XOR cipher & SUID binary logic flaw",
+      "terminal": {
+        "initial_host": "earth.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http, 443/tcp open https",
+        "suggested_cmd": "strings /usr/bin/reset_root"
+      }
+    },
+    {
+      "id": "vh-011",
+      "slug": "noob-1,746",
+      "title": "Noob: 1",
+      "date": "2021/09/22",
+      "vulnhub_url": "https://www.vulnhub.com/entry/noob-1,746/",
+      "series": "Noob",
+      "difficulty": "Easy",
+      "category": "Network & Crypto",
+      "category_badge": "CRYPTO",
+      "points": 470,
+      "summary": "Desafío de intrusión con filtrado en formularios, SQLi no ciega y manipulación de binarios de scripting.",
+      "skills": [
+        "SQL Injection",
+        "Database Dumping",
+        "Python Library Hijacking",
+        "Hashcat Cracking"
+      ],
+      "hints": [
+        "Intercepta la petición de búsqueda y aplica payloads `UNION SELECT` para enumerar esquemas.",
+        "Recupera las credenciales del usuario de base de datos y crackea el hash SHA-256.",
+        "Verifica el orden de carga de módulos Python (`sys.path`) para interceptar una importación en un script root."
+      ],
+      "flag_user": "flag{usr_red_db_creds_extracted}",
+      "flag_root": "flag{root_red_sysadmin_pwned_all}",
+      "cve_reference": "SQL Injection & Python PYTHONPATH Hijacking",
+      "terminal": {
+        "initial_host": "red.vulnlab.local",
+        "ports": "80/tcp open http (nginx/1.18.0), 3306/tcp filtered mysql",
+        "suggested_cmd": "sqlmap -u 'http://10.10.10.78/search.php?id=1' --dbs"
+      }
+    },
+    {
+      "id": "vh-012",
+      "slug": "digitalworldlocal-electrical,747",
+      "title": "digitalworld.local: electrical",
+      "date": "2021/09/22",
+      "vulnhub_url": "https://www.vulnhub.com/entry/digitalworldlocal-electrical,747/",
+      "series": "digitalworld.local",
+      "difficulty": "Intermediate",
+      "category": "Active Directory / Pivoting",
+      "category_badge": "PIVOT",
+      "points": 107,
+      "summary": "Auditoría de autenticación OAuth simulada, explotación de deserialización insegura y escalada con capacidades de Linux.",
+      "skills": [
+        "Insecure Deserialization",
+        "SSRF Exploitation",
+        "Linux Capabilities",
+        "GTFOBins Abuse"
+      ],
+      "hints": [
+        "Analiza el parámetro de estado y cookie que almacena objetos serializados en base64.",
+        "Genera un payload de deserialización que ejecute un reverse shell hacia tu IP.",
+        "Busca capacidades activas con `getcap -r / 2>/dev/null` e inspecciona binarios con `cap_setuid`."
+      ],
+      "flag_user": "flag{usr_napping_pickle_payload}",
+      "flag_root": "flag{root_napping_cap_setuid_won}",
+      "cve_reference": "Python Pickle RCE / cap_setuid+ep",
+      "terminal": {
+        "initial_host": "napping.vulnlab.local",
+        "ports": "5000/tcp open http (Werkzeug/2.0.1 Python/3.9.5)",
+        "suggested_cmd": "getcap -r / 2>/dev/null"
+      }
+    },
+    {
+      "id": "vh-013",
+      "slug": "corrosion-2,745",
+      "title": "Corrosion: 2",
+      "date": "2021/09/21",
+      "vulnhub_url": "https://www.vulnhub.com/entry/corrosion-2,745/",
+      "series": "Corrosion",
+      "difficulty": "Medium",
+      "category": "Web Exploitation",
+      "category_badge": "WEB",
+      "points": 144,
+      "summary": "Máquina orientada a evasión de restricciones y escalada de privilegios a través de debilidades de configuración y servicios locales.",
+      "skills": [
+        "Nmap Port Scan",
+        "Directory Fuzzing",
+        "Cronjob Misconfiguration",
+        "Kernel/Capability Abuse"
+      ],
+      "hints": [
+        "Fase 1: Identifica servicios HTTP en puertos no estándar y busca rutas ocultas con gobuster/feroxbuster.",
+        "Fase 2: Revisa permisos de lectura en scripts programados o sockets UNIX expuestos.",
+        "Fase 3: Explota variables de entorno o capacidades POSIX para elevar permisos a root."
+      ],
+      "flag_user": "flag{usr_morpheus_subversion_ok}",
+      "flag_root": "flag{root_morpheus_matrix_liberated}",
+      "cve_reference": "CVE-2021-3493 / Local SUID misconfig",
+      "terminal": {
+        "initial_host": "victim.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http (Apache/2.4.41), 8080/tcp open http-proxy",
+        "suggested_cmd": "nmap -sC -sV 10.10.10.75"
+      }
+    },
+    {
+      "id": "vh-014",
+      "slug": "dripping-blues-1,744",
+      "title": "Dripping Blues: 1",
+      "date": "2021/09/19",
+      "vulnhub_url": "https://www.vulnhub.com/entry/dripping-blues-1,744/",
+      "series": "Dripping Blues",
+      "difficulty": "Hard",
+      "category": "Privilege Escalation",
+      "category_badge": "PRIVESC",
+      "points": 181,
+      "summary": "Vulnerabilidad de inyección en endpoints web con ejecución de comandos remotos (RCE) y elevación por credenciales filtradas.",
+      "skills": [
+        "Command Injection",
+        "Reverse Shell Spawning",
+        "Sudoers Inspection",
+        "Password Hash Cracking"
+      ],
+      "hints": [
+        "Prueba el parámetro HTTP `site=` o `page=` agregando delimitadores de bash (`;`, `&&`, `|`).",
+        "Obtén una shell reversa conectándote a tu listener de Netcat.",
+        "Ejecuta `sudo -l` para verificar qué binarios se ejecutan como root sin contraseña."
+      ],
+      "flag_user": "flag{usr_jangow_remote_exec_found}",
+      "flag_root": "flag{root_jangow_system_privs_won}",
+      "cve_reference": "OWASP Top 10 - A03: Injection & Sudo Rules",
+      "terminal": {
+        "initial_host": "jangow.vulnlab.local",
+        "ports": "21/tcp open ftp (vsftpd 3.0.3), 80/tcp open http (PHP/7.4.3)",
+        "suggested_cmd": "curl -s http://10.10.10.76/?site=127.0.0.1%3Bid"
+      }
+    },
+    {
+      "id": "vh-015",
+      "slug": "doubletrouble-1,743",
+      "title": "doubletrouble: 1",
+      "date": "2021/09/11",
+      "vulnhub_url": "https://www.vulnhub.com/entry/doubletrouble-1,743/",
+      "series": "doubletrouble",
+      "difficulty": "Insane",
+      "category": "Linux / Misconfig",
+      "category_badge": "CONFIG",
+      "points": 218,
+      "summary": "Entorno basado en reconocimiento estricto de microservicios y contenedorización con escape a nodo anfitrión.",
+      "skills": [
+        "Docker Container Escape",
+        "API Reconnaissance",
+        "JWT Tampering",
+        "Capabilities Pwn"
+      ],
+      "hints": [
+        "Descubre cabeceras HTTP de autorización e inspecciona la firma de los tokens JWT emitidos.",
+        "Una vez dentro del contenedor, revisa si `/var/run/docker.sock` está montado.",
+        "Aprovecha el socket para instanciar un contenedor con montaje del sistema de archivos `/` del host."
+      ],
+      "flag_user": "flag{usr_webn7_token_forgery}",
+      "flag_root": "flag{root_webn7_docker_socket_escape}",
+      "cve_reference": "Docker Socket Mounted / JWT None-Algorithm",
+      "terminal": {
+        "initial_host": "n7.vulnlab.local",
+        "ports": "80/tcp open http, 443/tcp open ssl/http, 5000/tcp open docker-registry",
+        "suggested_cmd": "docker -H unix:///var/run/docker.sock run -v /:/host -it alpine"
+      }
+    },
+    {
+      "id": "vh-016",
+      "slug": "beelzebub-1,742",
+      "title": "Beelzebub: 1",
+      "date": "2021/09/08",
+      "vulnhub_url": "https://www.vulnhub.com/entry/beelzebub-1,742/",
+      "series": "Beelzebub",
+      "difficulty": "Easy",
+      "category": "Reverse & Binary",
+      "category_badge": "PWN",
+      "points": 255,
+      "summary": "Reto astronómico centrado en ofuscación en capas, esteganografía y elevación mediante tareas programadas.",
+      "skills": [
+        "Steganography / Exif",
+        "Binary Reversing",
+        "Chroot Breakout",
+        "SUID Exploitation"
+      ],
+      "hints": [
+        "Examina los metadatos de las imágenes servidas en el portal principal.",
+        "Descifra la cadena en base64 con la clave XOR oculta en el archivo robots.txt.",
+        "Analiza el binario SUID con `strings` o `ltrace` para alterar su flujo condicional."
+      ],
+      "flag_user": "flag{usr_earth_message_decoded}",
+      "flag_root": "flag{root_earth_core_control_obtained}",
+      "cve_reference": "Custom XOR cipher & SUID binary logic flaw",
+      "terminal": {
+        "initial_host": "earth.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http, 443/tcp open https",
+        "suggested_cmd": "strings /usr/bin/reset_root"
+      }
+    },
+    {
+      "id": "vh-017",
+      "slug": "digitalworldlocal-fall,726",
+      "title": "digitalworld.local: FALL",
+      "date": "2021/09/06",
+      "vulnhub_url": "https://www.vulnhub.com/entry/digitalworldlocal-fall,726/",
+      "series": "digitalworld.local",
+      "difficulty": "Intermediate",
+      "category": "Network & Crypto",
+      "category_badge": "CRYPTO",
+      "points": 292,
+      "summary": "Desafío de intrusión con filtrado en formularios, SQLi no ciega y manipulación de binarios de scripting.",
+      "skills": [
+        "SQL Injection",
+        "Database Dumping",
+        "Python Library Hijacking",
+        "Hashcat Cracking"
+      ],
+      "hints": [
+        "Intercepta la petición de búsqueda y aplica payloads `UNION SELECT` para enumerar esquemas.",
+        "Recupera las credenciales del usuario de base de datos y crackea el hash SHA-256.",
+        "Verifica el orden de carga de módulos Python (`sys.path`) para interceptar una importación en un script root."
+      ],
+      "flag_user": "flag{usr_red_db_creds_extracted}",
+      "flag_root": "flag{root_red_sysadmin_pwned_all}",
+      "cve_reference": "SQL Injection & Python PYTHONPATH Hijacking",
+      "terminal": {
+        "initial_host": "red.vulnlab.local",
+        "ports": "80/tcp open http (nginx/1.18.0), 3306/tcp filtered mysql",
+        "suggested_cmd": "sqlmap -u 'http://10.10.10.78/search.php?id=1' --dbs"
+      }
+    },
+    {
+      "id": "vh-018",
+      "slug": "deathnote-1,739",
+      "title": "Deathnote: 1",
+      "date": "2021/09/04",
+      "vulnhub_url": "https://www.vulnhub.com/entry/deathnote-1,739/",
+      "series": "Deathnote",
+      "difficulty": "Medium",
+      "category": "Active Directory / Pivoting",
+      "category_badge": "PIVOT",
+      "points": 329,
+      "summary": "Auditoría de autenticación OAuth simulada, explotación de deserialización insegura y escalada con capacidades de Linux.",
+      "skills": [
+        "Insecure Deserialization",
+        "SSRF Exploitation",
+        "Linux Capabilities",
+        "GTFOBins Abuse"
+      ],
+      "hints": [
+        "Analiza el parámetro de estado y cookie que almacena objetos serializados en base64.",
+        "Genera un payload de deserialización que ejecute un reverse shell hacia tu IP.",
+        "Busca capacidades activas con `getcap -r / 2>/dev/null` e inspecciona binarios con `cap_setuid`."
+      ],
+      "flag_user": "flag{usr_napping_pickle_payload}",
+      "flag_root": "flag{root_napping_cap_setuid_won}",
+      "cve_reference": "Python Pickle RCE / cap_setuid+ep",
+      "terminal": {
+        "initial_host": "napping.vulnlab.local",
+        "ports": "5000/tcp open http (Werkzeug/2.0.1 Python/3.9.5)",
+        "suggested_cmd": "getcap -r / 2>/dev/null"
+      }
+    },
+    {
+      "id": "vh-019",
+      "slug": "vikings-1,741",
+      "title": "Vikings: 1",
+      "date": "2021/09/04",
+      "vulnhub_url": "https://www.vulnhub.com/entry/vikings-1,741/",
+      "series": "Vikings",
+      "difficulty": "Hard",
+      "category": "Web Exploitation",
+      "category_badge": "WEB",
+      "points": 366,
+      "summary": "Máquina orientada a evasión de restricciones y escalada de privilegios a través de debilidades de configuración y servicios locales.",
+      "skills": [
+        "Nmap Port Scan",
+        "Directory Fuzzing",
+        "Cronjob Misconfiguration",
+        "Kernel/Capability Abuse"
+      ],
+      "hints": [
+        "Fase 1: Identifica servicios HTTP en puertos no estándar y busca rutas ocultas con gobuster/feroxbuster.",
+        "Fase 2: Revisa permisos de lectura en scripts programados o sockets UNIX expuestos.",
+        "Fase 3: Explota variables de entorno o capacidades POSIX para elevar permisos a root."
+      ],
+      "flag_user": "flag{usr_morpheus_subversion_ok}",
+      "flag_root": "flag{root_morpheus_matrix_liberated}",
+      "cve_reference": "CVE-2021-3493 / Local SUID misconfig",
+      "terminal": {
+        "initial_host": "victim.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http (Apache/2.4.41), 8080/tcp open http-proxy",
+        "suggested_cmd": "nmap -sC -sV 10.10.10.75"
+      }
+    },
+    {
+      "id": "vh-020",
+      "slug": "darkhole-2,740",
+      "title": "DarkHole: 2",
+      "date": "2021/09/03",
+      "vulnhub_url": "https://www.vulnhub.com/entry/darkhole-2,740/",
+      "series": "DarkHole",
+      "difficulty": "Insane",
+      "category": "Privilege Escalation",
+      "category_badge": "PRIVESC",
+      "points": 403,
+      "summary": "Vulnerabilidad de inyección en endpoints web con ejecución de comandos remotos (RCE) y elevación por credenciales filtradas.",
+      "skills": [
+        "Command Injection",
+        "Reverse Shell Spawning",
+        "Sudoers Inspection",
+        "Password Hash Cracking"
+      ],
+      "hints": [
+        "Prueba el parámetro HTTP `site=` o `page=` agregando delimitadores de bash (`;`, `&&`, `|`).",
+        "Obtén una shell reversa conectándote a tu listener de Netcat.",
+        "Ejecuta `sudo -l` para verificar qué binarios se ejecutan como root sin contraseña."
+      ],
+      "flag_user": "flag{usr_jangow_remote_exec_found}",
+      "flag_root": "flag{root_jangow_system_privs_won}",
+      "cve_reference": "OWASP Top 10 - A03: Injection & Sudo Rules",
+      "terminal": {
+        "initial_host": "jangow.vulnlab.local",
+        "ports": "21/tcp open ftp (vsftpd 3.0.3), 80/tcp open http (PHP/7.4.3)",
+        "suggested_cmd": "curl -s http://10.10.10.76/?site=127.0.0.1%3Bid"
+      }
+    },
+    {
+      "id": "vh-021",
+      "slug": "buffemr-101,717",
+      "title": "BuffEMR: 1.0.1",
+      "date": "2021/08/31",
+      "vulnhub_url": "https://www.vulnhub.com/entry/buffemr-101,717/",
+      "series": "BuffEMR",
+      "difficulty": "Easy",
+      "category": "Linux / Misconfig",
+      "category_badge": "CONFIG",
+      "points": 440,
+      "summary": "Entorno basado en reconocimiento estricto de microservicios y contenedorización con escape a nodo anfitrión.",
+      "skills": [
+        "Docker Container Escape",
+        "API Reconnaissance",
+        "JWT Tampering",
+        "Capabilities Pwn"
+      ],
+      "hints": [
+        "Descubre cabeceras HTTP de autorización e inspecciona la firma de los tokens JWT emitidos.",
+        "Una vez dentro del contenedor, revisa si `/var/run/docker.sock` está montado.",
+        "Aprovecha el socket para instanciar un contenedor con montaje del sistema de archivos `/` del host."
+      ],
+      "flag_user": "flag{usr_webn7_token_forgery}",
+      "flag_root": "flag{root_webn7_docker_socket_escape}",
+      "cve_reference": "Docker Socket Mounted / JWT None-Algorithm",
+      "terminal": {
+        "initial_host": "n7.vulnlab.local",
+        "ports": "80/tcp open http, 443/tcp open ssl/http, 5000/tcp open docker-registry",
+        "suggested_cmd": "docker -H unix:///var/run/docker.sock run -v /:/host -it alpine"
+      }
+    },
+    {
+      "id": "vh-022",
+      "slug": "grotesque-301,723",
+      "title": "Grotesque: 3.0.1",
+      "date": "2021/08/25",
+      "vulnhub_url": "https://www.vulnhub.com/entry/grotesque-301,723/",
+      "series": "Grotesque",
+      "difficulty": "Intermediate",
+      "category": "Reverse & Binary",
+      "category_badge": "PWN",
+      "points": 477,
+      "summary": "Reto astronómico centrado en ofuscación en capas, esteganografía y elevación mediante tareas programadas.",
+      "skills": [
+        "Steganography / Exif",
+        "Binary Reversing",
+        "Chroot Breakout",
+        "SUID Exploitation"
+      ],
+      "hints": [
+        "Examina los metadatos de las imágenes servidas en el portal principal.",
+        "Descifra la cadena en base64 con la clave XOR oculta en el archivo robots.txt.",
+        "Analiza el binario SUID con `strings` o `ltrace` para alterar su flujo condicional."
+      ],
+      "flag_user": "flag{usr_earth_message_decoded}",
+      "flag_root": "flag{root_earth_core_control_obtained}",
+      "cve_reference": "Custom XOR cipher & SUID binary logic flaw",
+      "terminal": {
+        "initial_host": "earth.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http, 443/tcp open https",
+        "suggested_cmd": "strings /usr/bin/reset_root"
+      }
+    },
+    {
+      "id": "vh-023",
+      "slug": "digitalworldlocal-snakeoil,738",
+      "title": "digitalworld.local: snakeoil",
+      "date": "2021/08/23",
+      "vulnhub_url": "https://www.vulnhub.com/entry/digitalworldlocal-snakeoil,738/",
+      "series": "digitalworld.local",
+      "difficulty": "Medium",
+      "category": "Network & Crypto",
+      "category_badge": "CRYPTO",
+      "points": 114,
+      "summary": "Desafío de intrusión con filtrado en formularios, SQLi no ciega y manipulación de binarios de scripting.",
+      "skills": [
+        "SQL Injection",
+        "Database Dumping",
+        "Python Library Hijacking",
+        "Hashcat Cracking"
+      ],
+      "hints": [
+        "Intercepta la petición de búsqueda y aplica payloads `UNION SELECT` para enumerar esquemas.",
+        "Recupera las credenciales del usuario de base de datos y crackea el hash SHA-256.",
+        "Verifica el orden de carga de módulos Python (`sys.path`) para interceptar una importación en un script root."
+      ],
+      "flag_user": "flag{usr_red_db_creds_extracted}",
+      "flag_root": "flag{root_red_sysadmin_pwned_all}",
+      "cve_reference": "SQL Injection & Python PYTHONPATH Hijacking",
+      "terminal": {
+        "initial_host": "red.vulnlab.local",
+        "ports": "80/tcp open http (nginx/1.18.0), 3306/tcp filtered mysql",
+        "suggested_cmd": "sqlmap -u 'http://10.10.10.78/search.php?id=1' --dbs"
+      }
+    },
+    {
+      "id": "vh-024",
+      "slug": "vulnerable-pentesting-lab-environment-1,737",
+      "title": "Vulnerable Pentesting Lab Environment: 1",
+      "date": "2021/08/19",
+      "vulnhub_url": "https://www.vulnhub.com/entry/vulnerable-pentesting-lab-environment-1,737/",
+      "series": "Vulnerable Pentesting Lab Environment",
+      "difficulty": "Hard",
+      "category": "Active Directory / Pivoting",
+      "category_badge": "PIVOT",
+      "points": 151,
+      "summary": "Auditoría de autenticación OAuth simulada, explotación de deserialización insegura y escalada con capacidades de Linux.",
+      "skills": [
+        "Insecure Deserialization",
+        "SSRF Exploitation",
+        "Linux Capabilities",
+        "GTFOBins Abuse"
+      ],
+      "hints": [
+        "Analiza el parámetro de estado y cookie que almacena objetos serializados en base64.",
+        "Genera un payload de deserialización que ejecute un reverse shell hacia tu IP.",
+        "Busca capacidades activas con `getcap -r / 2>/dev/null` e inspecciona binarios con `cap_setuid`."
+      ],
+      "flag_user": "flag{usr_napping_pickle_payload}",
+      "flag_root": "flag{root_napping_cap_setuid_won}",
+      "cve_reference": "Python Pickle RCE / cap_setuid+ep",
+      "terminal": {
+        "initial_host": "napping.vulnlab.local",
+        "ports": "5000/tcp open http (Werkzeug/2.0.1 Python/3.9.5)",
+        "suggested_cmd": "getcap -r / 2>/dev/null"
+      }
+    },
+    {
+      "id": "vh-025",
+      "slug": "evilbox-one,736",
+      "title": "EvilBox: One",
+      "date": "2021/08/16",
+      "vulnhub_url": "https://www.vulnhub.com/entry/evilbox-one,736/",
+      "series": "EvilBox",
+      "difficulty": "Insane",
+      "category": "Web Exploitation",
+      "category_badge": "WEB",
+      "points": 188,
+      "summary": "Máquina orientada a evasión de restricciones y escalada de privilegios a través de debilidades de configuración y servicios locales.",
+      "skills": [
+        "Nmap Port Scan",
+        "Directory Fuzzing",
+        "Cronjob Misconfiguration",
+        "Kernel/Capability Abuse"
+      ],
+      "hints": [
+        "Fase 1: Identifica servicios HTTP en puertos no estándar y busca rutas ocultas con gobuster/feroxbuster.",
+        "Fase 2: Revisa permisos de lectura en scripts programados o sockets UNIX expuestos.",
+        "Fase 3: Explota variables de entorno o capacidades POSIX para elevar permisos a root."
+      ],
+      "flag_user": "flag{usr_morpheus_subversion_ok}",
+      "flag_root": "flag{root_morpheus_matrix_liberated}",
+      "cve_reference": "CVE-2021-3493 / Local SUID misconfig",
+      "terminal": {
+        "initial_host": "victim.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http (Apache/2.4.41), 8080/tcp open http-proxy",
+        "suggested_cmd": "nmap -sC -sV 10.10.10.75"
+      }
+    },
+    {
+      "id": "vh-026",
+      "slug": "chronos-1,735",
+      "title": "Chronos: 1",
+      "date": "2021/08/09",
+      "vulnhub_url": "https://www.vulnhub.com/entry/chronos-1,735/",
+      "series": "Chronos",
+      "difficulty": "Easy",
+      "category": "Privilege Escalation",
+      "category_badge": "PRIVESC",
+      "points": 225,
+      "summary": "Vulnerabilidad de inyección en endpoints web con ejecución de comandos remotos (RCE) y elevación por credenciales filtradas.",
+      "skills": [
+        "Command Injection",
+        "Reverse Shell Spawning",
+        "Sudoers Inspection",
+        "Password Hash Cracking"
+      ],
+      "hints": [
+        "Prueba el parámetro HTTP `site=` o `page=` agregando delimitadores de bash (`;`, `&&`, `|`).",
+        "Obtén una shell reversa conectándote a tu listener de Netcat.",
+        "Ejecuta `sudo -l` para verificar qué binarios se ejecutan como root sin contraseña."
+      ],
+      "flag_user": "flag{usr_jangow_remote_exec_found}",
+      "flag_root": "flag{root_jangow_system_privs_won}",
+      "cve_reference": "OWASP Top 10 - A03: Injection & Sudo Rules",
+      "terminal": {
+        "initial_host": "jangow.vulnlab.local",
+        "ports": "21/tcp open ftp (vsftpd 3.0.3), 80/tcp open http (PHP/7.4.3)",
+        "suggested_cmd": "curl -s http://10.10.10.76/?site=127.0.0.1%3Bid"
+      }
+    },
+    {
+      "id": "vh-027",
+      "slug": "hacksudo-thor,733",
+      "title": "hacksudo: Thor",
+      "date": "2021/08/03",
+      "vulnhub_url": "https://www.vulnhub.com/entry/hacksudo-thor,733/",
+      "series": "hacksudo",
+      "difficulty": "Intermediate",
+      "category": "Linux / Misconfig",
+      "category_badge": "CONFIG",
+      "points": 262,
+      "summary": "Entorno basado en reconocimiento estricto de microservicios y contenedorización con escape a nodo anfitrión.",
+      "skills": [
+        "Docker Container Escape",
+        "API Reconnaissance",
+        "JWT Tampering",
+        "Capabilities Pwn"
+      ],
+      "hints": [
+        "Descubre cabeceras HTTP de autorización e inspecciona la firma de los tokens JWT emitidos.",
+        "Una vez dentro del contenedor, revisa si `/var/run/docker.sock` está montado.",
+        "Aprovecha el socket para instanciar un contenedor con montaje del sistema de archivos `/` del host."
+      ],
+      "flag_user": "flag{usr_webn7_token_forgery}",
+      "flag_root": "flag{root_webn7_docker_socket_escape}",
+      "cve_reference": "Docker Socket Mounted / JWT None-Algorithm",
+      "terminal": {
+        "initial_host": "n7.vulnlab.local",
+        "ports": "80/tcp open http, 443/tcp open ssl/http, 5000/tcp open docker-registry",
+        "suggested_cmd": "docker -H unix:///var/run/docker.sock run -v /:/host -it alpine"
+      }
+    },
+    {
+      "id": "vh-028",
+      "slug": "thoth-tech-1,734",
+      "title": "Thoth Tech: 1",
+      "date": "2021/08/03",
+      "vulnhub_url": "https://www.vulnhub.com/entry/thoth-tech-1,734/",
+      "series": "Thoth Tech",
+      "difficulty": "Medium",
+      "category": "Reverse & Binary",
+      "category_badge": "PWN",
+      "points": 299,
+      "summary": "Reto astronómico centrado en ofuscación en capas, esteganografía y elevación mediante tareas programadas.",
+      "skills": [
+        "Steganography / Exif",
+        "Binary Reversing",
+        "Chroot Breakout",
+        "SUID Exploitation"
+      ],
+      "hints": [
+        "Examina los metadatos de las imágenes servidas en el portal principal.",
+        "Descifra la cadena en base64 con la clave XOR oculta en el archivo robots.txt.",
+        "Analiza el binario SUID con `strings` o `ltrace` para alterar su flujo condicional."
+      ],
+      "flag_user": "flag{usr_earth_message_decoded}",
+      "flag_root": "flag{root_earth_core_control_obtained}",
+      "cve_reference": "Custom XOR cipher & SUID binary logic flaw",
+      "terminal": {
+        "initial_host": "earth.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http, 443/tcp open https",
+        "suggested_cmd": "strings /usr/bin/reset_root"
+      }
+    },
+    {
+      "id": "vh-029",
+      "slug": "hacker-kid-101,719",
+      "title": "Hacker kid: 1.0.1",
+      "date": "2021/08/02",
+      "vulnhub_url": "https://www.vulnhub.com/entry/hacker-kid-101,719/",
+      "series": "Hacker kid",
+      "difficulty": "Hard",
+      "category": "Network & Crypto",
+      "category_badge": "CRYPTO",
+      "points": 336,
+      "summary": "Desafío de intrusión con filtrado en formularios, SQLi no ciega y manipulación de binarios de scripting.",
+      "skills": [
+        "SQL Injection",
+        "Database Dumping",
+        "Python Library Hijacking",
+        "Hashcat Cracking"
+      ],
+      "hints": [
+        "Intercepta la petición de búsqueda y aplica payloads `UNION SELECT` para enumerar esquemas.",
+        "Recupera las credenciales del usuario de base de datos y crackea el hash SHA-256.",
+        "Verifica el orden de carga de módulos Python (`sys.path`) para interceptar una importación en un script root."
+      ],
+      "flag_user": "flag{usr_red_db_creds_extracted}",
+      "flag_root": "flag{root_red_sysadmin_pwned_all}",
+      "cve_reference": "SQL Injection & Python PYTHONPATH Hijacking",
+      "terminal": {
+        "initial_host": "red.vulnlab.local",
+        "ports": "80/tcp open http (nginx/1.18.0), 3306/tcp filtered mysql",
+        "suggested_cmd": "sqlmap -u 'http://10.10.10.78/search.php?id=1' --dbs"
+      }
+    },
+    {
+      "id": "vh-030",
+      "slug": "looz-1,732",
+      "title": "Looz: 1",
+      "date": "2021/08/02",
+      "vulnhub_url": "https://www.vulnhub.com/entry/looz-1,732/",
+      "series": "Looz",
+      "difficulty": "Insane",
+      "category": "Active Directory / Pivoting",
+      "category_badge": "PIVOT",
+      "points": 373,
+      "summary": "Auditoría de autenticación OAuth simulada, explotación de deserialización insegura y escalada con capacidades de Linux.",
+      "skills": [
+        "Insecure Deserialization",
+        "SSRF Exploitation",
+        "Linux Capabilities",
+        "GTFOBins Abuse"
+      ],
+      "hints": [
+        "Analiza el parámetro de estado y cookie que almacena objetos serializados en base64.",
+        "Genera un payload de deserialización que ejecute un reverse shell hacia tu IP.",
+        "Busca capacidades activas con `getcap -r / 2>/dev/null` e inspecciona binarios con `cap_setuid`."
+      ],
+      "flag_user": "flag{usr_napping_pickle_payload}",
+      "flag_root": "flag{root_napping_cap_setuid_won}",
+      "cve_reference": "Python Pickle RCE / cap_setuid+ep",
+      "terminal": {
+        "initial_host": "napping.vulnlab.local",
+        "ports": "5000/tcp open http (Werkzeug/2.0.1 Python/3.9.5)",
+        "suggested_cmd": "getcap -r / 2>/dev/null"
+      }
+    },
+    {
+      "id": "vh-031",
+      "slug": "corrosion-1,730",
+      "title": "Corrosion: 1",
+      "date": "2021/07/31",
+      "vulnhub_url": "https://www.vulnhub.com/entry/corrosion-1,730/",
+      "series": "Corrosion",
+      "difficulty": "Easy",
+      "category": "Web Exploitation",
+      "category_badge": "WEB",
+      "points": 410,
+      "summary": "Máquina orientada a evasión de restricciones y escalada de privilegios a través de debilidades de configuración y servicios locales.",
+      "skills": [
+        "Nmap Port Scan",
+        "Directory Fuzzing",
+        "Cronjob Misconfiguration",
+        "Kernel/Capability Abuse"
+      ],
+      "hints": [
+        "Fase 1: Identifica servicios HTTP en puertos no estándar y busca rutas ocultas con gobuster/feroxbuster.",
+        "Fase 2: Revisa permisos de lectura en scripts programados o sockets UNIX expuestos.",
+        "Fase 3: Explota variables de entorno o capacidades POSIX para elevar permisos a root."
+      ],
+      "flag_user": "flag{usr_morpheus_subversion_ok}",
+      "flag_root": "flag{root_morpheus_matrix_liberated}",
+      "cve_reference": "CVE-2021-3493 / Local SUID misconfig",
+      "terminal": {
+        "initial_host": "victim.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http (Apache/2.4.41), 8080/tcp open http-proxy",
+        "suggested_cmd": "nmap -sC -sV 10.10.10.75"
+      }
+    },
+    {
+      "id": "vh-032",
+      "slug": "hack-me-please-1,731",
+      "title": "Hack Me Please: 1",
+      "date": "2021/07/31",
+      "vulnhub_url": "https://www.vulnhub.com/entry/hack-me-please-1,731/",
+      "series": "Hack Me Please",
+      "difficulty": "Intermediate",
+      "category": "Privilege Escalation",
+      "category_badge": "PRIVESC",
+      "points": 447,
+      "summary": "Vulnerabilidad de inyección en endpoints web con ejecución de comandos remotos (RCE) y elevación por credenciales filtradas.",
+      "skills": [
+        "Command Injection",
+        "Reverse Shell Spawning",
+        "Sudoers Inspection",
+        "Password Hash Cracking"
+      ],
+      "hints": [
+        "Prueba el parámetro HTTP `site=` o `page=` agregando delimitadores de bash (`;`, `&&`, `|`).",
+        "Obtén una shell reversa conectándote a tu listener de Netcat.",
+        "Ejecuta `sudo -l` para verificar qué binarios se ejecutan como root sin contraseña."
+      ],
+      "flag_user": "flag{usr_jangow_remote_exec_found}",
+      "flag_root": "flag{root_jangow_system_privs_won}",
+      "cve_reference": "OWASP Top 10 - A03: Injection & Sudo Rules",
+      "terminal": {
+        "initial_host": "jangow.vulnlab.local",
+        "ports": "21/tcp open ftp (vsftpd 3.0.3), 80/tcp open http (PHP/7.4.3)",
+        "suggested_cmd": "curl -s http://10.10.10.76/?site=127.0.0.1%3Bid"
+      }
+    },
+    {
+      "id": "vh-033",
+      "slug": "ia-keyring-101,718",
+      "title": "IA: Keyring (1.0.1)",
+      "date": "2021/07/30",
+      "vulnhub_url": "https://www.vulnhub.com/entry/ia-keyring-101,718/",
+      "series": "IA",
+      "difficulty": "Medium",
+      "category": "Linux / Misconfig",
+      "category_badge": "CONFIG",
+      "points": 484,
+      "summary": "Entorno basado en reconocimiento estricto de microservicios y contenedorización con escape a nodo anfitrión.",
+      "skills": [
+        "Docker Container Escape",
+        "API Reconnaissance",
+        "JWT Tampering",
+        "Capabilities Pwn"
+      ],
+      "hints": [
+        "Descubre cabeceras HTTP de autorización e inspecciona la firma de los tokens JWT emitidos.",
+        "Una vez dentro del contenedor, revisa si `/var/run/docker.sock` está montado.",
+        "Aprovecha el socket para instanciar un contenedor con montaje del sistema de archivos `/` del host."
+      ],
+      "flag_user": "flag{usr_webn7_token_forgery}",
+      "flag_root": "flag{root_webn7_docker_socket_escape}",
+      "cve_reference": "Docker Socket Mounted / JWT None-Algorithm",
+      "terminal": {
+        "initial_host": "n7.vulnlab.local",
+        "ports": "80/tcp open http, 443/tcp open ssl/http, 5000/tcp open docker-registry",
+        "suggested_cmd": "docker -H unix:///var/run/docker.sock run -v /:/host -it alpine"
+      }
+    },
+    {
+      "id": "vh-034",
+      "slug": "containme-1,729",
+      "title": "ContainMe: 1",
+      "date": "2021/07/29",
+      "vulnhub_url": "https://www.vulnhub.com/entry/containme-1,729/",
+      "series": "ContainMe",
+      "difficulty": "Hard",
+      "category": "Reverse & Binary",
+      "category_badge": "PWN",
+      "points": 121,
+      "summary": "Reto astronómico centrado en ofuscación en capas, esteganografía y elevación mediante tareas programadas.",
+      "skills": [
+        "Steganography / Exif",
+        "Binary Reversing",
+        "Chroot Breakout",
+        "SUID Exploitation"
+      ],
+      "hints": [
+        "Examina los metadatos de las imágenes servidas en el portal principal.",
+        "Descifra la cadena en base64 con la clave XOR oculta en el archivo robots.txt.",
+        "Analiza el binario SUID con `strings` o `ltrace` para alterar su flujo condicional."
+      ],
+      "flag_user": "flag{usr_earth_message_decoded}",
+      "flag_root": "flag{root_earth_core_control_obtained}",
+      "cve_reference": "Custom XOR cipher & SUID binary logic flaw",
+      "terminal": {
+        "initial_host": "earth.vulnlab.local",
+        "ports": "22/tcp open ssh, 80/tcp open http, 443/tcp open https",
+        "suggested_cmd": "strings /usr/bin/reset_root"
+      }
+    },
+    {
+      "id": "vh-035",
+      "slug": "hms-1,728",
+      "title": "Hms?: 1",
+      "date": "2021/07/28",
+      "vulnhub_url": "https://www.vulnhub.com/entry/hms-1,728/",
+      "series": "Hms?",
+      "difficulty": "Insane",
+      "category": "Network & Crypto",
+      "category_badge": "CRYPTO",
+      "points": 158,
+      "summary": "Desafío de intrusión con filtrado en formularios, SQLi no ciega y manipulación de binarios de scripting.",
+      "skills": [
+        "SQL Injection",
+        "Database Dumping",
+        "Python Library Hijacking",
+        "Hashcat Cracking"
+      ],
+      "hints": [
+        "Intercepta la petición de búsqueda y aplica payloads `UNION SELECT` para enumerar esquemas.",
+        "Recupera las credenciales del usuario de base de datos y crackea el hash SHA-256.",
+        "Verifica el orden de carga de módulos Python (`sys.path`) para interceptar una importación en un script root."
+      ],
+      "flag_user": "flag{usr_red_db_creds_extracted}",
+      "flag_root": "flag{root_red_sysadmin_pwned_all}",
+      "cve_reference": "SQL Injection & Python PYTHONPATH Hijacking",
+      "terminal": {
+        "initial_host": "red.vulnlab.local",
+        "ports": "80/tcp open http (nginx/1.18.0), 3306/tcp filtered mysql",
+        "suggested_cmd": "sqlmap -u 'http://10.10.10.78/search.php?id=1' --dbs"
+      }
+    },
+    {
+      "id": "vh-036",
+      "slug": "funbox-scriptkiddie,725",
+      "title": "Funbox: Scriptkiddie",
+      "date": "2021/07/20",
+      "vulnhub_url": "https://www.vulnhub.com/entry/funbox-scriptkiddie,725/",
+      "series": "Funbox",
+      "difficulty": "Easy",
+      "category": "Active Directory / Pivoting",
+      "category_badge": "PIVOT",
+      "points": 195,
+      "summary": "Auditoría de autenticación OAuth simulada, explotación de deserialización insegura y escalada con capacidades de Linux.",
+      "skills": [
+        "Insecure Deserialization",
+        "SSRF Exploitation",
+        "Linux Capabilities",
+        "GTFOBins Abuse"
+      ],
+      "hints": [
+        "Analiza el parámetro de estado y cookie que almacena objetos serializados en base64.",
+        "Genera un payload de deserialización que ejecute un reverse shell hacia tu IP.",
+        "Busca capacidades activas con `getcap -r / 2>/dev/null` e inspecciona binarios con `cap_setuid`."
+      ],
+      "flag_user": "flag{usr_napping_pickle_payload}",
+      "flag_root": "flag{root_napping_cap_setuid_won}",
+      "cve_reference": "Python Pickle RCE / cap_setuid+ep",
+      "terminal": {
+        "initial_host": "napping.vulnlab.local",
+        "ports": "5000/tcp open http (Werkzeug/2.0.1 Python/3.9.5)",
+        "suggested_cmd": "getcap -r / 2>/dev/null"
+      }
+    }
+  ]
+}
