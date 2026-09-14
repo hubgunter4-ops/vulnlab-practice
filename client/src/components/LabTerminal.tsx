@@ -140,7 +140,7 @@ export const LabTerminal: React.FC<TerminalProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+    <div className="lab-terminal flex flex-col h-full bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
       {/* Cabecera de la Terminal */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md">
         <div className="flex items-center gap-2">

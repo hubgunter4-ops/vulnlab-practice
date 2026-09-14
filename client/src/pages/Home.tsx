@@ -5,8 +5,9 @@ import {
   Shield, Terminal, Search, Filter, ExternalLink, Flame, CheckCircle, 
   HelpCircle, ChevronRight, Award, Trophy, Compass, Sparkles, BookOpen, 
   Layers, Zap, AlertCircle, RefreshCw, Radio, Activity, BarChart3, Clock3,
-  Database, Server, Gauge, Users, LayoutDashboard
+  Database, Server, Gauge, Users, LayoutDashboard, Sun, Moon
 } from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext";
 import labsData from "../data/vulnhub_labs.json";
 import blueprintData from "../data/practice_blueprints.json";
 import { Logo3DAnimation } from "../components/Logo3DAnimation";
@@ -21,6 +22,7 @@ export default function Home() {
   // startLogin() during render (no href={startLogin()}) — it mints a one-time
   // nonce cookie and must run only at the moment of navigation.
   let { user, loading, error, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const { data: syncedEnvironments = [] } = trpc.catalog.list.useQuery();
   const { data: syncStatus } = trpc.catalog.status.useQuery();
@@ -178,7 +180,7 @@ export default function Home() {
   const completionRate = allMachines.length ? Math.round((completedLabs / allMachines.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className={`min-h-screen flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200 ${theme === "light" ? "theme-light" : "theme-dark"}`}>
       {/* Navegación institucional */}
       <header className="sticky top-0 z-50 bg-slate-950/95 border-b border-slate-800 backdrop-blur-md px-4 lg:px-8 py-3">
         <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
@@ -200,6 +202,16 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={theme === "dark" ? "Activar modo claro" : "Activar modo oscuro"}
+              title={theme === "dark" ? "Activar modo claro" : "Activar modo oscuro"}
+              className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-mono text-slate-300 transition-colors hover:border-emerald-500/50 hover:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-400/60"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4 text-amber-300" /> : <Moon className="h-4 w-4 text-indigo-400" />}
+              <span className="hidden sm:inline">{theme === "dark" ? "Claro" : "Oscuro"}</span>
+            </button>
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono">
               <Activity className="w-4 h-4 text-emerald-400" />
               <span className="text-slate-400">Sesión activa</span>

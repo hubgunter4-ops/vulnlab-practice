@@ -137,3 +137,82 @@
 .terminal-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(16, 185, 129, 0.6);
 }
+
+/* Theme switch: the practice console intentionally stays dark for command readability. */
+.theme-light {
+  background: #f4f7fb;
+  color: #172033;
+  color-scheme: light;
+}
+
+.theme-light header,
+.theme-light footer,
+.theme-light main,
+.theme-light section {
+  border-color: #d8e0ea !important;
+}
+
+.theme-light header,
+.theme-light footer {
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.theme-light section {
+  background: #eef3f8 !important;
+}
+
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light .text-slate-100,
+.theme-light .text-slate-200 {
+  color: #172033 !important;
+}
+
+.theme-light .text-slate-300,
+.theme-light .text-slate-400,
+.theme-light .text-slate-500 {
+  color: #526174 !important;
+}
+
+.theme-light .bg-slate-950:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .bg-slate-950\/70:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .bg-slate-950\/60:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .bg-slate-950\/55:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .bg-slate-900:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .bg-slate-900\/80:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .bg-slate-900\/60:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .bg-slate-900\/50:not(.lab-terminal):not(.lab-terminal *) {
+  background: #ffffff !important;
+}
+
+.theme-light .bg-slate-800:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .bg-slate-800\/90:not(.lab-terminal):not(.lab-terminal *) {
+  background: #e8eef5 !important;
+}
+
+.theme-light .border-slate-800:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .border-slate-800\/80:not(.lab-terminal):not(.lab-terminal *),
+.theme-light .border-slate-700:not(.lab-terminal):not(.lab-terminal *) {
+  border-color: #d8e0ea !important;
+}
+
+.theme-light input,
+.theme-light select {
+  background: #ffffff !important;
+  color: #172033 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.theme-light .lab-terminal,
+.theme-light .lab-terminal * {
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-light *,
+  .theme-dark * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
